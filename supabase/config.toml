@@ -1,0 +1,2 @@
+[functions.notify-low-stock]
+verify_jwt = true
