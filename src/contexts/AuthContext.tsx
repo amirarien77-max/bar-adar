@@ -10,6 +10,7 @@ import {
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Profile, UserRole } from '../lib/types'
+import { canManageInventory, isAdminRole } from '../lib/permissions'
 
 interface AuthContextValue {
   session: Session | null
@@ -17,6 +18,7 @@ interface AuthContextValue {
   profile: Profile | null
   loading: boolean
   isAdmin: boolean
+  canManageInventory: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
@@ -90,7 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: session?.user ?? null,
       profile,
       loading,
-      isAdmin: profile?.role === 'admin',
+      isAdmin: isAdminRole(profile?.role),
+      canManageInventory: canManageInventory(profile?.role),
       signIn,
       signOut,
       refreshProfile,

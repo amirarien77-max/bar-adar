@@ -18,7 +18,7 @@ import { notifyLowStock } from '../lib/notifications'
 import type { DashboardFilter, Product, ProductStatus } from '../lib/types'
 
 export function DashboardPage() {
-  const { user, isAdmin } = useAuth()
+  const { user, canManageInventory } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -98,7 +98,7 @@ export function DashboardPage() {
           <h2 className="text-2xl font-bold text-bar-cream">רשימת המלאי</h2>
           <p className="text-sm text-bar-cream/50">{filtered.length} מוצרים</p>
         </div>
-        {isAdmin && (
+        {canManageInventory && (
           <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center justify-center gap-2 rounded-lg bg-bar-gold px-4 py-2 text-sm font-semibold text-bar-dark transition-colors hover:bg-bar-gold-light"
@@ -165,7 +165,7 @@ export function DashboardPage() {
             <tbody>
               {grouped.map(([category, categoryProducts]) =>
                 categoryProducts.map((product, index) => {
-                  const locked = !isAdmin && isLockedForUser(product.status)
+                  const locked = !canManageInventory && isLockedForUser(product.status)
                   return (
                     <tr
                       key={product.id}
@@ -212,7 +212,7 @@ export function DashboardPage() {
                               <Pencil className="h-4 w-4" />
                             </button>
                           )}
-                          {isAdmin &&
+                          {canManageInventory &&
                             (product.status === 'מעט' || product.status === 'אין בכלל') && (
                               <button
                                 onClick={() => setOrderProduct(product)}
@@ -222,7 +222,7 @@ export function DashboardPage() {
                                 <ShoppingCart className="h-4 w-4" />
                               </button>
                             )}
-                          {isAdmin && (
+                          {canManageInventory && (
                             <button
                               onClick={() => handleDelete(product.id)}
                               className="rounded p-1.5 text-red-400/60 hover:bg-red-500/10 hover:text-red-400"
@@ -246,7 +246,7 @@ export function DashboardPage() {
         <EditProductModal
           product={editingProduct}
           categories={existingCategories}
-          isAdmin={isAdmin}
+          canManageInventory={canManageInventory}
           userId={user?.id}
           onClose={() => setEditingProduct(null)}
           onSaved={() => {
@@ -284,13 +284,13 @@ export function DashboardPage() {
 interface EditProductModalProps {
   product: Product
   categories: string[]
-  isAdmin: boolean
+  canManageInventory: boolean
   userId?: string
   onClose: () => void
   onSaved: () => void
 }
 
-function EditProductModal({ product, categories, isAdmin, userId, onClose, onSaved }: EditProductModalProps) {
+function EditProductModal({ product, categories, canManageInventory, userId, onClose, onSaved }: EditProductModalProps) {
   const { profile } = useAuth()
   const [status, setStatus] = useState<ProductStatus>(product.status)
   const [category, setCategory] = useState(product.category ?? 'כללי')
@@ -301,7 +301,7 @@ function EditProductModal({ product, categories, isAdmin, userId, onClose, onSav
 
   const userStatuses: ProductStatus[] = ['מעט', 'אין בכלל']
   const adminStatuses: ProductStatus[] = ['יש', 'מעט', 'אין בכלל', 'הוזמן']
-  const availableStatuses = isAdmin ? adminStatuses : userStatuses
+  const availableStatuses = canManageInventory ? adminStatuses : userStatuses
 
   const needsQuantity = status === 'מעט' || status === 'אין בכלל'
 
@@ -316,10 +316,10 @@ function EditProductModal({ product, categories, isAdmin, userId, onClose, onSav
 
     const updates: Record<string, unknown> = {
       status,
-      quantity: needsQuantity || isAdmin ? quantity : product.quantity,
+      quantity: needsQuantity || canManageInventory ? quantity : product.quantity,
     }
 
-    if (isAdmin) {
+    if (canManageInventory) {
       updates.arrival_status = arrivalStatus || null
       updates.category = category.trim() || 'כללי'
     }
@@ -372,7 +372,7 @@ function EditProductModal({ product, categories, isAdmin, userId, onClose, onSav
           </select>
         </div>
 
-        {(needsQuantity || isAdmin) && (
+        {(needsQuantity || canManageInventory) && (
           <div>
             <label className="mb-1.5 block text-sm text-bar-cream/70">
               {needsQuantity ? 'כמות נדרשת' : 'כמות'}
@@ -387,7 +387,7 @@ function EditProductModal({ product, categories, isAdmin, userId, onClose, onSav
           </div>
         )}
 
-        {isAdmin && (
+        {canManageInventory && (
           <div>
             <label className="mb-1.5 block text-sm text-bar-cream/70">קטגוריה</label>
             <input
@@ -405,7 +405,7 @@ function EditProductModal({ product, categories, isAdmin, userId, onClose, onSav
           </div>
         )}
 
-        {isAdmin && (
+        {canManageInventory && (
           <div>
             <label className="mb-1.5 block text-sm text-bar-cream/70">תאריך/סטטוס הגעה</label>
             <input

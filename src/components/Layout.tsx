@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { BarChart3, LayoutList, LogOut, Users } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { LOGO_URL } from '../lib/constants'
+import { ROLE_LABELS } from '../lib/permissions'
 
 export function Layout() {
   const { profile, isAdmin, signOut } = useAuth()
@@ -56,7 +57,7 @@ export function Layout() {
                 {profile?.full_name ?? profile?.email}
               </p>
               <p className="text-xs text-bar-gold">
-                {isAdmin ? 'מנהל' : 'משתמש'}
+                {ROLE_LABELS[profile?.role ?? 'user']}
               </p>
             </div>
             <button

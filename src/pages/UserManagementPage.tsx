@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Loader2, Shield, UserPlus, Users } from 'lucide-react'
+import { Loader2, Shield, ShoppingBag, UserPlus, Users } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { Profile, UserRole } from '../lib/types'
+import { ROLE_LABELS } from '../lib/permissions'
 
 export function UserManagementPage() {
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -78,6 +79,8 @@ export function UserManagementPage() {
                     <div className="flex items-center gap-2">
                       {profile.role === 'admin' ? (
                         <Shield className="h-4 w-4 text-bar-gold" />
+                      ) : profile.role === 'procurement' ? (
+                        <ShoppingBag className="h-4 w-4 text-blue-400" />
                       ) : (
                         <Users className="h-4 w-4 text-bar-cream/40" />
                       )}
@@ -92,10 +95,12 @@ export function UserManagementPage() {
                       className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         profile.role === 'admin'
                           ? 'bg-bar-gold/20 text-bar-gold'
-                          : 'bg-bar-elevated text-bar-cream/60'
+                          : profile.role === 'procurement'
+                            ? 'bg-blue-500/20 text-blue-400'
+                            : 'bg-bar-elevated text-bar-cream/60'
                       }`}
                     >
-                      {profile.role === 'admin' ? 'מנהל' : 'משתמש'}
+                      {ROLE_LABELS[profile.role]}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-bar-cream/50 text-xs">
@@ -108,6 +113,7 @@ export function UserManagementPage() {
                       className="rounded-lg border border-bar-border bg-bar-elevated px-2 py-1 text-sm text-bar-cream focus:border-bar-gold focus:outline-none"
                     >
                       <option value="user">משתמש</option>
+                      <option value="procurement">איש רכש</option>
                       <option value="admin">מנהל</option>
                     </select>
                   </td>
@@ -229,6 +235,7 @@ function CreateUserModal({
               className="w-full rounded-lg border border-bar-border bg-bar-elevated px-3 py-2 text-bar-cream focus:border-bar-gold focus:outline-none"
             >
               <option value="user">משתמש</option>
+              <option value="procurement">איש רכש</option>
               <option value="admin">מנהל</option>
             </select>
           </div>
